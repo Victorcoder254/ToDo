@@ -1,63 +1,59 @@
+// DOM Elements
 const AddToDo = document.getElementById("AddToDo");
 const ToDoText = document.getElementById("ToDoText");
 const DueDate = document.getElementById("dueDateInput");
-const filterSelect = document.querySelector(".custom-select"); // Select the dropdown
+const filterSelect = document.querySelector(".custom-select"); // Dropdown filter
+const todoList = document.querySelector(".todo-list"); // Task list container
 
-let tasks = []; // Array to store task objects
+// Global task list
+let tasks = [];
 
-function saveToLocalStorage(tasks) {
+// Function to save tasks to local storage
+function saveToLocalStorage() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
+// Function to load tasks from local storage
 function loadFromLocalStorage() {
-    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-    return tasks; // Return the tasks array or an empty array if no data exists
+    tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 }
 
-
-// Add event listener for the Add button
-AddToDo.addEventListener("click", function () {
-    let newTask = ToDoText.value.trim();
-    let DueDateOfTask = DueDate.value.trim();
-
-    if (newTask === "" || DueDateOfTask === "") {
-        alert("Please enter a task and its due date!");
-        return;
-    }
-
-    // Create a new task object
-    const taskObject = {
-        id: Date.now(), // Unique ID for the task
-        task: newTask,
-        dueDate: DueDateOfTask,
-        completed: false, // Default state
-    };
-
-    // Add to the task list and save to localStorage
-    tasks.push(taskObject);
-    saveToLocalStorage(tasks);
-
-    // Clear the input fields
-    ToDoText.value = "";
-    DueDate.value = "";
-
-    // Render the updated task list
-    renderTasks();
-});
-
-
-// Function to render tasks based on filter
+// Function to render tasks with filtering
 function renderTasks() {
-    const todoList = document.querySelector(".todo-list");
-    todoList.innerHTML = ""; // Clear the existing list
+    todoList.innerHTML = ""; // Clear the list
 
-    tasks.forEach((task) => {
-        // Create the task container
+    // Get the current filter value
+    const filter = filterSelect.value;
+
+    // Filter tasks based on the selected filter
+    const filteredTasks = tasks.filter((task) => {
+        if (filter === "completed") {
+            return task.completed;
+        } else if (filter === "active") {
+            return !task.completed;
+        } else if (filter === "has-due-date") {
+            return task.dueDate !== "";
+        } else {
+            return true; // Default to all tasks
+        }
+    });
+
+    // Render each filtered task
+    filteredTasks.forEach((task) => {
+        // Task container
         const newDiv = document.createElement("div");
-        newDiv.classList.add("todo-item", "d-flex", "align-items-center", "justify-content-between", "mb-3", "p-2", "rounded");
+        newDiv.classList.add(
+            "todo-item",
+            "d-flex",
+            "align-items-center",
+            "justify-content-between",
+            "mb-3",
+            "p-2",
+            "rounded"
+        );
         newDiv.style.backgroundColor = "#f8f9fa";
 
-        // Create task content
+        // Task content
         const taskContent = document.createElement("div");
         taskContent.classList.add("d-flex", "align-items-center");
 
@@ -69,7 +65,7 @@ function renderTasks() {
         // Strike-through completed tasks
         checkbox.addEventListener("change", function () {
             task.completed = this.checked;
-            saveToLocalStorage(tasks);
+            saveToLocalStorage();
             renderTasks();
         });
 
@@ -83,12 +79,12 @@ function renderTasks() {
         dueDateText.style.fontSize = "0.9rem";
         dueDateText.style.color = "#6c757d";
 
-        // Append checkbox and texts
+        // Append content to the task item
         taskContent.appendChild(checkbox);
         taskContent.appendChild(taskText);
         taskContent.appendChild(dueDateText);
 
-        // Create delete button
+        // Delete button
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Delete";
         deleteButton.classList.add("btn", "btn-danger", "btn-sm");
@@ -96,20 +92,54 @@ function renderTasks() {
 
         deleteButton.addEventListener("click", function () {
             tasks = tasks.filter((t) => t.id !== task.id);
-            saveToLocalStorage(tasks);
+            saveToLocalStorage();
             renderTasks();
         });
 
-        // Append task content and delete button to the task container
+        // Append content and button to the task container
         newDiv.appendChild(taskContent);
         newDiv.appendChild(deleteButton);
 
-        // Append task container to the todo list
+        // Add task to the list
         todoList.appendChild(newDiv);
     });
 }
 
+// Add new task
+AddToDo.addEventListener("click", function () {
+    const newTask = ToDoText.value.trim();
+    const dueDateOfTask = DueDate.value.trim();
 
-// Event listener for filter changes
+    if (newTask === "" || dueDateOfTask === "") {
+        alert("Please enter a task and its due date!");
+        return;
+    }
+
+    // Create a new task object
+    const taskObject = {
+        id: Date.now(), // Unique ID
+        task: newTask,
+        dueDate: dueDateOfTask,
+        completed: false, // Default state
+    };
+
+    // Add task to the array and save
+    tasks.push(taskObject);
+    saveToLocalStorage();
+
+    // Clear input fields
+    ToDoText.value = "";
+    DueDate.value = "";
+
+    // Render updated tasks
+    renderTasks();
+});
+
+// Load tasks on page load
+document.addEventListener("DOMContentLoaded", () => {
+    loadFromLocalStorage();
+    renderTasks();
+});
+
+// Add event listener for filter changes
 filterSelect.addEventListener("change", renderTasks);
-
