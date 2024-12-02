@@ -10,7 +10,12 @@ let tasks = [];
 
 // Function to save tasks to local storage
 function saveToLocalStorage() {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
+    try {
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+    } catch (error) {
+        console.error("Error saving to localStorage:", error);
+        alert("Failed to save task. Local storage may be full.");
+    }
 }
 
 // Function to load tasks from local storage
