@@ -5,6 +5,16 @@ const filterSelect = document.querySelector(".custom-select"); // Select the dro
 
 let tasks = []; // Array to store task objects
 
+function saveToLocalStorage(tasks) {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function loadFromLocalStorage() {
+    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    return tasks; // Return the tasks array or an empty array if no data exists
+}
+
+
 // Add event listener for the Add button
 AddToDo.addEventListener("click", function () {
     let newTask = ToDoText.value.trim();
